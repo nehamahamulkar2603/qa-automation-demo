@@ -5,31 +5,39 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 public class LoginTest {
 
     WebDriver driver;
 
-    @BeforeTest
+    @BeforeMethod
     public void setup() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
         driver.manage().window().maximize();
     }
 
-    @Test
-    public void validLoginTest() throws InterruptedException {
+    @DataProvider(name = "validUsers")
+    public Object[][] getValidUsers() {
+        return new Object[][] {
+                {"standard_user", "secret_sauce"},
+                {"problem_user", "secret_sauce"},
+                {"performance_glitch_user", "secret_sauce"}
+        };
+    }
+
+    @Test(dataProvider = "validUsers")
+    public void validLoginTest(String username, String password)
+            throws InterruptedException {
         driver.get("https://www.saucedemo.com");
-        driver.findElement(By.id("user-name")).sendKeys("standard_user");
-        driver.findElement(By.id("password")).sendKeys("secret_sauce");
+        driver.findElement(By.id("user-name")).sendKeys(username);
+        driver.findElement(By.id("password")).sendKeys(password);
         driver.findElement(By.id("login-button")).click();
-        Thread.sleep(3000);
-        String expectedUrl = "https://www.saucedemo.com/inventory.html";
-        String actualUrl = driver.getCurrentUrl();
-        Assert.assertEquals(actualUrl, expectedUrl, "Login failed - URL did not match");
+        Thread.sleep(2000);
+        Assert.assertEquals(driver.getCurrentUrl(),
+                "https://www.saucedemo.com/inventory.html",
+                "Login failed for user: " + username);
     }
 
     @Test
@@ -45,7 +53,7 @@ public class LoginTest {
                 "Error message did not appear");
     }
 
-    @AfterTest
+    @AfterMethod
     public void teardown() {
         driver.quit();
     }
