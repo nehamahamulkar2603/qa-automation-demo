@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import com.qaproject.pages.LoginPage;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 public class LoginTest {
 
@@ -15,7 +16,13 @@ public class LoginTest {
     @BeforeMethod
     public void setup() {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        if (Boolean.parseBoolean(System.getProperty("headless", "false"))) {
+            options.addArguments("--headless");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+        }
+        driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         loginPage = new LoginPage(driver);
     }
