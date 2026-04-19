@@ -1,21 +1,23 @@
 package com.qaproject;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import com.qaproject.pages.LoginPage;
 
 public class LoginTest {
 
     WebDriver driver;
+    LoginPage loginPage;
 
     @BeforeMethod
     public void setup() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
         driver.manage().window().maximize();
+        loginPage = new LoginPage(driver);
     }
 
     @DataProvider(name = "validUsers")
@@ -31,9 +33,7 @@ public class LoginTest {
     public void validLoginTest(String username, String password)
             throws InterruptedException {
         driver.get("https://www.saucedemo.com");
-        driver.findElement(By.id("user-name")).sendKeys(username);
-        driver.findElement(By.id("password")).sendKeys(password);
-        driver.findElement(By.id("login-button")).click();
+        loginPage.login(username, password);
         Thread.sleep(2000);
         Assert.assertEquals(driver.getCurrentUrl(),
                 "https://www.saucedemo.com/inventory.html",
@@ -43,12 +43,8 @@ public class LoginTest {
     @Test
     public void invalidLoginTest() {
         driver.get("https://www.saucedemo.com");
-        driver.findElement(By.id("user-name")).sendKeys("wrong_user");
-        driver.findElement(By.id("password")).sendKeys("wrong_password");
-        driver.findElement(By.id("login-button")).click();
-        String errorMessage = driver.findElement(
-                By.cssSelector("[data-test='error']")).getText();
-        Assert.assertEquals(errorMessage,
+        loginPage.login("wrong_user", "wrong_password");
+        Assert.assertEquals(loginPage.getErrorMessage(),
                 "Epic sadface: Username and password do not match any user in this service",
                 "Error message did not appear");
     }
